@@ -1,7 +1,7 @@
 use std::sync::Mutex;
 
 use api_types::Entry;
-use core::Storage;
+use route::Storage;
 use rusqlite::Connection;
 
 const SCHEMA: &str = "CREATE TABLE IF NOT EXISTS entries (
