@@ -1,0 +1,10 @@
+[package]
+name = "storage-sqlite"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+api-types = { path = "../api-types" }
+core = { path = "../core" }
+anyhow = "1"
+rusqlite = { version = "0.32", features = ["bundled"] }
