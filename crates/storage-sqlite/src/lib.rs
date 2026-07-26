@@ -26,7 +26,7 @@ impl SqliteStorage {
 }
 
 impl Storage for SqliteStorage {
-    fn add_entry(&self, meters: i64) -> anyhow::Result<Entry> {
+    fn add_entry(&self, meters: i32) -> anyhow::Result<Entry> {
         let conn = self.conn.lock().unwrap();
 
         Ok(conn.query_row(
@@ -59,7 +59,7 @@ impl Storage for SqliteStorage {
         Ok(rows.collect::<Result<_, _>>()?)
     }
 
-    fn total_meters(&self) -> anyhow::Result<i64> {
+    fn total_meters(&self) -> anyhow::Result<i32> {
         let conn = self.conn.lock().unwrap();
 
         Ok(

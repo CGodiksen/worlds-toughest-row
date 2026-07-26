@@ -11,16 +11,16 @@ pub struct LatLng {
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct Entry {
-    pub id: i64,
-    pub meters: i64,
+    pub id: i32,
+    pub meters: i32,
     pub created_at: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct Progress {
-    pub total_meters: i64,
-    pub meters_remaining: i64,
+    pub total_meters: i32,
+    pub meters_remaining: i32,
     pub percent_complete: f64,
     pub position: LatLng,
     pub route: Vec<LatLng>,
@@ -30,5 +30,5 @@ pub struct Progress {
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct AdvanceRequest {
-    pub meters: Option<i64>,
+    pub meters: Option<i32>,
 }
