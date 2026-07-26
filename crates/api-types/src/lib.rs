@@ -2,14 +2,14 @@ use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../web/src/bindings/")]
+#[ts(export)]
 pub struct LatLng {
     pub lat: f64,
     pub lng: f64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../web/src/bindings/")]
+#[ts(export)]
 pub struct Entry {
     pub id: i64,
     pub meters: i64,
@@ -17,7 +17,7 @@ pub struct Entry {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../web/src/bindings/")]
+#[ts(export)]
 pub struct Progress {
     pub total_meters: i64,
     pub meters_remaining: i64,
@@ -28,7 +28,7 @@ pub struct Progress {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../web/src/bindings/")]
+#[ts(export)]
 pub struct AdvanceRequest {
     pub meters: Option<i64>,
 }
