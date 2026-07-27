@@ -8,6 +8,7 @@ pub trait Storage: Send + Sync + 'static {
     fn add_entry(&self, meters: i32) -> anyhow::Result<Entry>;
     fn list_entries(&self) -> anyhow::Result<Vec<Entry>>;
     fn total_meters(&self) -> anyhow::Result<i32>;
+    fn reset(&self) -> anyhow::Result<()>;
 }
 
 pub fn compute_progress(total_meters: i32, route: &Route) -> Progress {

@@ -15,6 +15,7 @@ pub fn router(state: AppState) -> Router {
     Router::new()
         .route("/api/progress", get(get_progress))
         .route("/api/entries", post(advance).get(list_entries))
+        .route("/api/entries", post(advance).get(list_entries).delete(reset))
         .fallback(static_handler)
         .with_state(state)
 }
@@ -37,6 +38,13 @@ async fn advance(
 
 async fn list_entries(State(st): State<AppState>) -> Result<Json<Vec<Entry>>, AppError> {
     Ok(Json(st.storage.list_entries()?))
+}
+
+async fn reset(State(st): State<AppState>) -> Result<Json<Progress>, AppError> {
+    st.storage.reset()?;
+    let total = st.storage.total_meters()?;
+
+    Ok(Json(compute_progress(total, &st.route)))
 }
 
 struct AppError(anyhow::Error);

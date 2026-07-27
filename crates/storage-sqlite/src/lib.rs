@@ -68,4 +68,12 @@ impl Storage for SqliteStorage {
             })?,
         )
     }
+
+    fn reset(&self) -> anyhow::Result<()> {
+        let conn = self.conn.lock().unwrap();
+
+        conn.execute("DELETE FROM entries", [])?;
+
+        Ok(())
+    }
 }
