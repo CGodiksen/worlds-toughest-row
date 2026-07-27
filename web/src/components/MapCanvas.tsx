@@ -1,10 +1,10 @@
 import {useEffect, useRef, useState} from "react";
-import {type StyleSpecification, type GeoJSONSource, Map, Marker, NavigationControl, LngLatBounds} from "maplibre-gl";
+import {Map as MapLibreMap, Marker, NavigationControl, LngLatBounds} from "maplibre-gl";
+import type {StyleSpecification, GeoJSONSource} from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import type {Progress} from "../bindings/Progress";
 import type {LatLng} from "../bindings/LatLng";
 
-// Key-free raster style.
 const MAP_STYLE: StyleSpecification = {
     version: 8,
     sources: {
@@ -28,7 +28,7 @@ const lineFeature = (points: LatLng[]): GeoJSON.Feature<GeoJSON.LineString> => (
 
 export function MapCanvas({progress}: { progress: Progress | null }) {
     const containerRef = useRef<HTMLDivElement>(null);
-    const mapRef = useRef<Map | null>(null);
+    const mapRef = useRef<MapLibreMap | null>(null);
     const markerRef = useRef<Marker | null>(null);
     const fittedRef = useRef(false);
     const [ready, setReady] = useState(false);
@@ -37,32 +37,15 @@ export function MapCanvas({progress}: { progress: Progress | null }) {
     useEffect(() => {
         if (!containerRef.current) return;
 
-        const map = new Map({
+        const map = new MapLibreMap({
             container: containerRef.current,
             style: MAP_STYLE,
-            center: [0, 0],
+            center: [-40, 25],
             zoom: 2,
         });
         map.addControl(new NavigationControl(), "bottom-right");
         mapRef.current = map;
-
-        map.on("load", () => {
-            map.addSource("route", {type: "geojson", data: lineFeature([])});
-            map.addLayer({
-                id: "route",
-                type: "line",
-                source: "route",
-                paint: {"line-color": "#94a3b8", "line-width": 2, "line-dasharray": [2, 2]},
-            });
-            map.addSource("trail", {type: "geojson", data: lineFeature([])});
-            map.addLayer({
-                id: "trail",
-                type: "line",
-                source: "trail",
-                paint: {"line-color": "#2563eb", "line-width": 4},
-            });
-            setReady(true);
-        });
+        map.on("load", () => setReady(true));
 
         return () => {
             map.remove();
@@ -73,20 +56,45 @@ export function MapCanvas({progress}: { progress: Progress | null }) {
         };
     }, []);
 
-    // Sync data → map whenever progress changes (and map is ready).
+    // Create-or-update sources/layers whenever progress changes.
     useEffect(() => {
         const map = mapRef.current;
         if (!map || !ready || !progress) return;
 
-        (map.getSource("route") as GeoJSONSource).setData(lineFeature(progress.route));
-        (map.getSource("trail") as GeoJSONSource).setData(lineFeature(progress.trail));
+        const routeData = lineFeature(progress.route);
+        const trailData = lineFeature(progress.trail);
+
+        if (!map.getSource("route")) {
+            map.addSource("route", {type: "geojson", data: routeData});
+            map.addLayer({
+                id: "route",
+                type: "line",
+                source: "route",
+                layout: {"line-cap": "round", "line-join": "round"},
+                paint: {"line-color": "#cbd5e1", "line-width": 6},
+            });
+        } else {
+            (map.getSource("route") as GeoJSONSource).setData(routeData);
+        }
+
+        if (!map.getSource("trail")) {
+            map.addSource("trail", {type: "geojson", data: trailData});
+            map.addLayer({
+                id: "trail",
+                type: "line",
+                source: "trail",
+                layout: {"line-cap": "round", "line-join": "round"},
+                paint: {"line-color": "#2563eb", "line-width": 6},
+            });
+        } else {
+            (map.getSource("trail") as GeoJSONSource).setData(trailData);
+        }
 
         if (!markerRef.current) {
             markerRef.current = new Marker({color: "#2563eb"});
         }
         markerRef.current.setLngLat(toLngLat(progress.position)).addTo(map);
 
-        // Frame the route once, and drop start/end pins.
         if (!fittedRef.current && progress.route.length > 0) {
             const start = progress.route[0];
             const end = progress.route[progress.route.length - 1];
@@ -97,7 +105,7 @@ export function MapCanvas({progress}: { progress: Progress | null }) {
                 (b, p) => b.extend(toLngLat(p)),
                 new LngLatBounds(toLngLat(start), toLngLat(start)),
             );
-            map.fitBounds(bounds, { padding: 120, maxZoom: 3.7, duration: 0 });
+            map.fitBounds(bounds, {padding: 120, maxZoom: 3.7, duration: 0});
             fittedRef.current = true;
         }
     }, [progress, ready]);
