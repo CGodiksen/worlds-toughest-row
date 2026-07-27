@@ -65,26 +65,26 @@ export function MapCanvas({progress}: { progress: Progress | null }) {
         const trailData = lineFeature(progress.trail);
 
         if (!map.getSource("route")) {
-            map.addSource("route", {type: "geojson", data: routeData});
+            map.addSource("route", { type: "geojson", data: routeData });
             map.addLayer({
                 id: "route",
                 type: "line",
                 source: "route",
-                layout: {"line-cap": "round", "line-join": "round"},
-                paint: {"line-color": "#cbd5e1", "line-width": 6},
+                layout: { "line-join": "round" },
+                paint: { "line-color": "#9ca3af", "line-width": 2, "line-dasharray": [2, 2] },
             });
         } else {
             (map.getSource("route") as GeoJSONSource).setData(routeData);
         }
 
         if (!map.getSource("trail")) {
-            map.addSource("trail", {type: "geojson", data: trailData});
+            map.addSource("trail", { type: "geojson", data: trailData });
             map.addLayer({
                 id: "trail",
                 type: "line",
                 source: "trail",
-                layout: {"line-cap": "round", "line-join": "round"},
-                paint: {"line-color": "#2563eb", "line-width": 6},
+                layout: { "line-cap": "round", "line-join": "round" },
+                paint: { "line-color": "#2563eb", "line-width": 5 },
             });
         } else {
             (map.getSource("trail") as GeoJSONSource).setData(trailData);
