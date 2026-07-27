@@ -1,20 +1,27 @@
+//! SQLite-backed implementation of the [`Storage`] trait, persisting rowing entries in a local
+//! database file.
+
 use std::sync::Mutex;
 
 use api_types::Entry;
 use route::Storage;
 use rusqlite::Connection;
 
+/// SQL that creates the `entries` table if it does not already exist.
 const SCHEMA: &str = "CREATE TABLE IF NOT EXISTS entries (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     meters INTEGER NOT NULL,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );";
 
+/// A [`Storage`] backed by a single SQLite connection.
 pub struct SqliteStorage {
+    /// The database connection, guarded by a mutex for shared access.
     conn: Mutex<Connection>,
 }
 
 impl SqliteStorage {
+    /// Open (or create) the database at `path` and ensure the schema exists.
     pub fn open(path: &str) -> anyhow::Result<Self> {
         let conn = Connection::open(path)?;
         conn.execute_batch(SCHEMA)?;
@@ -26,6 +33,7 @@ impl SqliteStorage {
 }
 
 impl Storage for SqliteStorage {
+    /// Insert a new entry and return it as stored (with id, meters, and timestamp).
     fn add_entry(&self, meters: i32) -> anyhow::Result<Entry> {
         let conn = self.conn.lock().unwrap();
 
@@ -43,6 +51,7 @@ impl Storage for SqliteStorage {
         )?)
     }
 
+    /// Return all entries ordered newest-first.
     fn list_entries(&self) -> anyhow::Result<Vec<Entry>> {
         let conn = self.conn.lock().unwrap();
         let mut stmt =
@@ -59,6 +68,7 @@ impl Storage for SqliteStorage {
         Ok(rows.collect::<Result<_, _>>()?)
     }
 
+    /// Return the summed meters across all entries (0 when the table is empty).
     fn total_meters(&self) -> anyhow::Result<i32> {
         let conn = self.conn.lock().unwrap();
 
@@ -69,6 +79,7 @@ impl Storage for SqliteStorage {
         )
     }
 
+    /// Delete every entry from the table.
     fn reset(&self) -> anyhow::Result<()> {
         let conn = self.conn.lock().unwrap();
 
