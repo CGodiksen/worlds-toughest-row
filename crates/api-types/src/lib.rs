@@ -53,3 +53,13 @@ pub struct AdvanceRequest {
     /// Meters rowed. When omitted, the server defaults to 500 m.
     pub meters: Option<i32>,
 }
+
+/// Full app state, pushed to clients over SSE whenever anything changes.
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub struct Snapshot {
+    /// Current progress along the route.
+    pub progress: Progress,
+    /// All logged entries, with the newest first.
+    pub entries: Vec<Entry>,
+}
