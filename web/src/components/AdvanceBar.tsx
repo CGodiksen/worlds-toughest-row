@@ -7,7 +7,7 @@ interface Props {
 }
 
 export function AdvanceBar({ onAdvance, busy }: Props) {
-    const [meters, setMeters] = useState("");
+    const [meters, setMeters] = useState("500");
 
     const submit = () => onAdvance(meters ? Number(meters) : undefined);
 
@@ -25,6 +25,8 @@ export function AdvanceBar({ onAdvance, busy }: Props) {
         >
             <input
                 type="number"
+                min={0}
+                step={100}
                 placeholder="500"
                 value={meters}
                 onChange={(e) => setMeters(e.target.value)}

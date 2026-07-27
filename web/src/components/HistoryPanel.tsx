@@ -4,7 +4,6 @@ import { overlay } from "../styles/overlay";
 
 export function HistoryPanel({ entries }: { entries: Entry[] }) {
     const [open, setOpen] = useState(false);
-    const newestFirst = [...entries].reverse();
 
     return (
         <div style={overlay({ bottom: 24, left: 16, width: open ? 280 : "auto", padding: open ? 12 : 0 })}>
@@ -29,10 +28,10 @@ export function HistoryPanel({ entries }: { entries: Entry[] }) {
 
             {open && (
                 <ul style={{ listStyle: "none", margin: 0, padding: 0, maxHeight: 220, overflowY: "auto" }}>
-                    {newestFirst.length === 0 && (
+                    {entries.length === 0 && (
                         <li style={{ opacity: 0.6, fontSize: ".8rem", padding: "6px 4px" }}>No entries yet</li>
                     )}
-                    {newestFirst.map((e) => (
+                    {entries.map((e) => (
                         <li
                             key={e.id}
                             style={{
