@@ -4,7 +4,7 @@
 use std::sync::Mutex;
 
 use api_types::Entry;
-use route::Storage;
+use storage::Storage;
 use rusqlite::Connection;
 
 /// SQL that creates the `entries` table if it does not already exist.

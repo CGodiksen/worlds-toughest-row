@@ -5,6 +5,6 @@ edition = "2024"
 
 [dependencies]
 api-types = { path = "../api-types" }
-route = { path = "../route" }
+storage = { path = "../storage" }
 anyhow = "1"
 rusqlite = { version = "0.40.1", features = ["bundled"] }

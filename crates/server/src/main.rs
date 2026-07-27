@@ -4,6 +4,7 @@
 mod router;
 
 use std::sync::Arc;
+
 use route::Route;
 use storage_sqlite::SqliteStorage;
 
@@ -11,7 +12,7 @@ use storage_sqlite::SqliteStorage;
 #[derive(Clone)]
 pub struct AppState {
     /// Persistence backend for rowing entries.
-    pub storage: Arc<dyn route::Storage>,
+    pub storage: Arc<dyn storage::Storage>,
     /// The fixed route progress is measured against.
     pub route: Arc<Route>,
 }

@@ -6,6 +6,7 @@ edition = "2024"
 [dependencies]
 api-types = { path = "../api-types" }
 route = { path = "../route" }
+storage = { path = "../storage" }
 storage-sqlite = { path = "../storage-sqlite" }
 axum = "0.8.9"
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "net"] }
