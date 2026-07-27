@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import type { Progress } from "../bindings/Progress";
+import type { Snapshot } from "../bindings/Snapshot";
 import type { Entry } from "../bindings/Entry";
 import { getProgress, advance, history, reset as resetApi } from "../api";
 
@@ -18,6 +19,18 @@ export function useRowingData() {
     useEffect(() => {
         refresh().catch(console.error);
     }, [refresh]);
+
+    // Live updates. The server pushes a full snapshot whenever anything changes, including rows auto-ingested from the
+    // erg. EventSource auto-reconnects.
+    useEffect(() => {
+        const es = new EventSource("/api/events");
+        es.onmessage = (e) => {
+            const snap: Snapshot = JSON.parse(e.data);
+            setProgress(snap.progress);
+            setEntries(snap.entries);
+        };
+        return () => es.close();
+    }, []);
 
     const advanceBy = useCallback(async (meters?: number) => {
         setBusy(true);
