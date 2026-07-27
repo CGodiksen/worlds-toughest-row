@@ -14,7 +14,7 @@ pub fn compute_progress(total_meters: i32, route: &Route) -> Progress {
     let d = (total_meters as f64).clamp(0.0, route.total_m);
 
     Progress {
-        total_meters,
+        total_meters: d as i32,
         meters_remaining: (route.total_m - d).max(0.0) as i32,
         percent_complete: if route.total_m > 0.0 {
             d / route.total_m * 100.0
