@@ -5,6 +5,8 @@ mod router;
 
 use std::sync::Arc;
 
+use tokio::sync::broadcast;
+use api_types::Snapshot;
 use route::Route;
 use storage_sqlite::SqliteStorage;
 
@@ -15,15 +17,19 @@ pub struct AppState {
     pub storage: Arc<dyn storage::Storage>,
     /// The fixed route progress is measured against.
     pub route: Arc<Route>,
+    /// Broadcasts a fresh snapshot to all connected SSE clients on every change.
+    pub sender: broadcast::Sender<Snapshot>,
 }
 
 /// Start the server. Open the database, build the router, bind the listener, open a browser,
 /// and serve until shut down.
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    let (sender, _) = broadcast::channel(16);
     let state = AppState {
         storage: Arc::new(SqliteStorage::open("rowing.db")?),
         route: Arc::new(Route::worlds_toughest_row()),
+        sender,
     };
 
     let app = router::router(state);
