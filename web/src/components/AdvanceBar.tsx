@@ -45,7 +45,7 @@ export function AdvanceBar({ onAdvance, busy }: Props) {
                     cursor: busy ? "default" : "pointer",
                 }}
             >
-                {busy ? "…" : "+ Row"}
+                {busy ? "…" : "Row"}
             </button>
         </div>
     );

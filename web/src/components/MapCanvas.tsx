@@ -97,7 +97,7 @@ export function MapCanvas({progress}: { progress: Progress | null }) {
                 (b, p) => b.extend(toLngLat(p)),
                 new LngLatBounds(toLngLat(start), toLngLat(start)),
             );
-            map.fitBounds(bounds, {padding: 80, duration: 0});
+            map.fitBounds(bounds, { padding: 120, maxZoom: 3.7, duration: 0 });
             fittedRef.current = true;
         }
     }, [progress, ready]);
