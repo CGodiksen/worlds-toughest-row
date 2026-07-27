@@ -4,9 +4,10 @@ import { AdvanceBar } from "./components/AdvanceBar";
 import { HistoryPanel } from "./components/HistoryPanel";
 import { useRowingData } from "./hooks/useRowingData";
 import {Celebration} from "./components/Celebration";
+import { FinishBanner } from "./components/FinishBanner";
 
 export function App() {
-    const { progress, entries, busy, advanceBy } = useRowingData();
+    const { progress, entries, busy, advanceBy, reset } = useRowingData();
 
     return (
         <div style={{ position: "fixed", inset: 0, fontFamily: "system-ui" }}>
@@ -17,6 +18,7 @@ export function App() {
                     <AdvanceBar onAdvance={advanceBy} busy={busy} />
                     <HistoryPanel entries={entries} />
                     <Celebration done={progress.percent_complete >= 100} />
+                    {progress.percent_complete >= 100 && <FinishBanner onReset={reset} busy={busy} />}
                 </>
             )}
         </div>

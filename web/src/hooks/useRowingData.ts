@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import type { Progress } from "../bindings/Progress";
 import type { Entry } from "../bindings/Entry";
-import { getProgress, advance, history } from "../api";
+import { getProgress, advance, history, reset as resetApi } from "../api";
 
 export function useRowingData() {
     const [progress, setProgress] = useState<Progress | null>(null);
@@ -29,5 +29,15 @@ export function useRowingData() {
         }
     }, []);
 
-    return { progress, entries, busy, advanceBy };
+    const reset = useCallback(async () => {
+        setBusy(true);
+        try {
+            setProgress(await resetApi());
+            setEntries(await history());
+        } finally {
+            setBusy(false);
+        }
+    }, []);
+
+    return { progress, entries, busy, advanceBy, reset };
 }

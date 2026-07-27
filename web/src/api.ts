@@ -22,3 +22,9 @@ export async function history(): Promise<Entry[]> {
     if (!r.ok) throw new Error(await r.text());
     return r.json();
 }
+
+export async function reset(): Promise<Progress> {
+    const r = await fetch("/api/entries", { method: "DELETE" });
+    if (!r.ok) throw new Error(await r.text());
+    return r.json();
+}
