@@ -4,8 +4,8 @@
 use std::sync::Mutex;
 
 use api_types::Entry;
-use storage::Storage;
 use rusqlite::Connection;
+use storage::Storage;
 
 /// SQL that creates the `entries` table if it does not already exist.
 const SCHEMA: &str = "CREATE TABLE IF NOT EXISTS entries (

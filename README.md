@@ -20,9 +20,10 @@ opens in your browser.
 ```
 crates/
   api-types/       Shared DTOs (source of the generated TS bindings)
-  route/           Route geometry + progress math + the Storage trait
-  server/          axum HTTP server that embeds the built UI
+  storage/         The Storage trait that provides an abstraction layer over the database
   storage-sqlite/  SQLite implementation of the Storage trait
+  route/           Route geometry + progress math
+  server/          axum HTTP server that embeds the built UI
 web/               React + Vite frontend
 ```
 
