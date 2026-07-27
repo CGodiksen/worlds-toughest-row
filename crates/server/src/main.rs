@@ -1,15 +1,23 @@
+//! Binary entry point that wires up storage and the route, starts the axum server on
+//! `127.0.0.1:8080`, and opens the app in the browser.
+
 mod router;
 
 use std::sync::Arc;
 use route::Route;
 use storage_sqlite::SqliteStorage;
 
+/// Shared application state passed to every request handler.
 #[derive(Clone)]
 pub struct AppState {
+    /// Persistence backend for rowing entries.
     pub storage: Arc<dyn route::Storage>,
+    /// The fixed route progress is measured against.
     pub route: Arc<Route>,
 }
 
+/// Start the server. Open the database, build the router, bind the listener, open a browser,
+/// and serve until shut down.
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let state = AppState {
