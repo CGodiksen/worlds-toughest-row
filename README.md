@@ -2,7 +2,8 @@
 
 A live progress tracker for a row across the Atlantic, from La Gomera in the Canary Islands to Antigua in the Caribbean.
 Log the distance you've rowed and watch your boat crawl along the ~4,800 km trade-wind route on a full-screen
-map, with running stats, a history log, and a finish-line celebration.
+map, with running stats, a history log, and a finish-line celebration. The project is inspired by the annual
+[World's Toughest Row](https://worldstoughestrow.com/) event.
 
 The whole thing ships as a **single Rust binary** that serves the JSON API and embeds the built React UI. Run it, and it
 opens in your browser.
