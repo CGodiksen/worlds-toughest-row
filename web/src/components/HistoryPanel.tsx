@@ -27,7 +27,7 @@ export function HistoryPanel({ entries }: { entries: Entry[] }) {
             </button>
 
             {open && (
-                <ul style={{ listStyle: "none", margin: 0, padding: 0, maxHeight: 220, overflowY: "auto" }}>
+                <ul style={{ listStyle: "none", margin: 0, padding: 0, maxHeight: 220, overflowY: "auto", paddingRight: 10 }}>
                     {entries.length === 0 && (
                         <li style={{ opacity: 0.6, fontSize: ".8rem", padding: "6px 4px" }}>No entries yet</li>
                     )}
@@ -44,7 +44,7 @@ export function HistoryPanel({ entries }: { entries: Entry[] }) {
                             }}
                         >
                             <span>{e.meters} m</span>
-                            <span style={{ opacity: 0.6 }}>{new Date(e.created_at).toLocaleString()}</span>
+                            <span style={{ opacity: 0.6 }}>{new Date(e.created_at).toLocaleString("en-GB")}</span>
                         </li>
                     ))}
                 </ul>

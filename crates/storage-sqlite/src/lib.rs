@@ -11,7 +11,7 @@ use storage::Storage;
 const SCHEMA: &str = "CREATE TABLE IF NOT EXISTS entries (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     meters INTEGER NOT NULL,
-    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
 );";
 
 /// A [`Storage`] backed by a single SQLite connection.
