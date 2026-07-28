@@ -57,7 +57,6 @@ async fn main() -> anyhow::Result<()> {
         println!("Disconnected: cooling down so the erg can sleep.\n");
 
         drop(adapter);
-        drop(manager);
 
         tokio::time::sleep(COOLDOWN).await;
     }
@@ -115,13 +114,9 @@ async fn row_distance(pm: &Peripheral) -> anyhow::Result<Option<i32>> {
         tokio::select! {
             frame = notifications.next() => {
                 let Some(n) = frame else { break }; // Link dropped.
-                if n.uuid == status.uuid {
-                    if let Some(current_distance) = parse_distance(&n.value) {
-                        if current_distance > last_distance {
-                            last_distance = current_distance;
-                            last_progress = Instant::now();
-                        }
-                    }
+                if n.uuid == status.uuid && let Some(current_distance) = parse_distance(&n.value) && current_distance > last_distance {
+                    last_distance = current_distance;
+                    last_progress = Instant::now();
                 }
             }
             _ = ticker.tick() => {
