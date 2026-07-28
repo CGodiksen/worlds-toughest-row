@@ -5,14 +5,18 @@ Log the distance you've rowed and watch your boat crawl along the ~4,800 km trad
 map, with running stats, a history log, and a finish-line celebration. The project is inspired by the annual
 [World's Toughest Row](https://worldstoughestrow.com/) event.
 
-The whole thing ships as a **single Rust binary** that serves the JSON API and embeds the built React UI. Run it, and it
+Rows can be logged by hand or captured automatically from a Concept2 erg with a small background agent that connects to 
+your rowing machine over Bluetooth and posts each session for you. Either way the map updates live, with no refresh.
+
+The tracker ships as a **single Rust binary** that serves the JSON API and embeds the built React UI. Run it, and it
 opens in your browser.
 
 ## Technology stack
 
-- **Backend** — Rust, [axum](https://github.com/tokio-rs/axum), SQLite (via `rusqlite`)
-- **Frontend** — React + TypeScript + Vite, [MapLibre GL](https://maplibre.org/)
-- **Shared types** — Rust structs are the single source of truth. [`ts-rs`](https://github.com/Aleph-Alpha/ts-rs)
+- **Backend:** Rust, [axum](https://github.com/tokio-rs/axum), SQLite (via `rusqlite`), Server-Sent Events for live updates.
+- **Frontend:** React + TypeScript + Vite, [MapLibre GL](https://maplibre.org/).
+- **Erg agent:** Rust, [btleplug](https://github.com/deviceplug/btleplug) for Bluetooth, `reqwest` for posting rows.
+- **Shared types:** Rust structs are the single source of truth. [`ts-rs`](https://github.com/Aleph-Alpha/ts-rs)
   generates the matching TypeScript definitions.
 
 ## Project layout
@@ -24,6 +28,7 @@ crates/
   storage-sqlite/  SQLite implementation of the Storage trait
   route/           Route geometry + progress math
   server/          axum HTTP server that embeds the built UI
+  erg-agent/       Background agent that logs rows from a Concept2 PM5 over Bluetooth
 web/               React + Vite frontend
 ```
 
@@ -52,14 +57,31 @@ cd web && npm run build
 cargo run --release -p server
 ```
 
+## Automatic erg capture
+
+The `erg-agent` binary logs rows from a Concept2 PM5 monitor with no manual entry. It waits for the erg to wake
+(the monitor advertises over Bluetooth once you start pulling), follows the cumulative distance, and posts the total
+to the server once you stop. Then it lets the monitor go back to sleep and waits for the next row.
+
+Run it alongside the server, on a machine with Bluetooth that is in range of the erg:
+
+```sh
+cargo run -p erg-agent
+```
+
+It posts to the same `POST /api/entries` endpoint the web form uses, so captured rows show up in the history and on
+the map immediately. If the server is not reachable, a row is skipped and logged, and the manual form stays available
+as a fallback.
+
 ## API
 
-| Method   | Path            | Description                                         |
-|----------|-----------------|-----------------------------------------------------|
-| `GET`    | `/api/progress` | Current position, trail, and stats.                 |
-| `POST`   | `/api/entries`  | Log a row (defaults to 500 m) and returns progress. |
-| `GET`    | `/api/entries`  | List all logged entries (newest first).             |
-| `DELETE` | `/api/entries`  | Reset and clear all entries.                        |
+| Method   | Path            | Description                                             |
+|----------|-----------------|---------------------------------------------------------|
+| `GET`    | `/api/progress` | Current position, trail, and stats.                     |
+| `POST`   | `/api/entries`  | Log a row (defaults to 500 m) and returns progress.     |
+| `GET`    | `/api/entries`  | List all logged entries (newest first).                 |
+| `DELETE` | `/api/entries`  | Reset and clear all entries.                            |
+| `GET`    | `/api/events`   | Server-Sent Events stream of state snapshots (live UI). |
 
 ## Regenerating TypeScript types
 
