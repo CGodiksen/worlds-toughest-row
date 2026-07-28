@@ -5,7 +5,9 @@
 //! Each cycle we get a fresh Bluetooth adapter, scan, wait for the erg to advertise (it does once
 //! you start rowing), connect, log the row, disconnect, and cool down so the erg can sleep before
 //! scanning again. A fresh adapter each cycle keeps btleplug's WinRT device cache from wedging
-//! across reconnects.
+//! across reconnects, and a bounded scan window means a scan that never wakes (started before the
+//! Bluetooth stack was ready at boot, or dropped by a driver glitch) gets recycled instead of
+//! polling a dead watcher forever.
 
 use std::time::{Duration, Instant};
 
@@ -28,6 +30,15 @@ const IDLE: Duration = Duration::from_secs(30);
 /// enough apart that this never misses one.
 const COOLDOWN: Duration = Duration::from_secs(300);
 
+/// Recycle the adapter if no erg appears within one scan window. A scan can wedge silently on
+/// Windows (started before the Bluetooth stack was ready at boot, or dropped by an HCI glitch).
+/// Rebuilding the adapter gives a fresh WinRT device object instead of polling a dead watcher
+/// forever.
+const SCAN_WINDOW: Duration = Duration::from_secs(120);
+
+/// Back off this long after a Bluetooth error before retrying, so a flaky adapter is not hammered.
+const RETRY_DELAY: Duration = Duration::from_secs(5);
+
 /// Ignore sessions shorter than this.
 const MIN_METERS: f64 = 15.0;
 
@@ -38,28 +49,44 @@ const GENERAL_STATUS: Uuid = Uuid::from_u128(0xce06_0031_43e5_11e4_916c_0800_200
 async fn main() -> anyhow::Result<()> {
     let client = Client::new();
 
+    // Never exit. Any Bluetooth error just means recycle and retry.
     loop {
-        let manager = Manager::new().await?;
-        let adapter = first_adapter(&manager).await?;
-        adapter.start_scan(ScanFilter::default()).await?;
-
-        println!("Waiting for the erg...");
-        let pm = find_pm5(&adapter).await?;
-
-        println!("Erg detected: connecting...");
-        match row_distance(&pm).await {
-            Ok(Some(meters)) => log_row(&client, meters).await,
-            Ok(None) => {}
-            Err(e) => eprintln!("Session error: {e}."),
+        if let Err(e) = run_cycle(&client).await {
+            eprintln!("Cycle error: {e}.");
+            tokio::time::sleep(RETRY_DELAY).await;
         }
-
-        pm.disconnect().await.ok();
-        println!("Disconnected: cooling down so the erg can sleep.\n");
-
-        drop(adapter);
-
-        tokio::time::sleep(COOLDOWN).await;
     }
+}
+
+/// One scan-to-cooldown cycle with a fresh adapter. Returns `Ok` after logging a row and after an
+/// empty scan window (so the caller rescans immediately with a new adapter), and propagates any
+/// Bluetooth error so the caller can back off and retry with a fresh adapter.
+async fn run_cycle(client: &Client) -> anyhow::Result<()> {
+    let manager = Manager::new().await?;
+    let adapter = first_adapter(&manager).await?;
+    adapter.start_scan(ScanFilter::default()).await?;
+
+    println!("Waiting for the erg...");
+    let found = find_pm5(&adapter).await?;
+    adapter.stop_scan().await.ok();
+
+    let Some(pm) = found else {
+        // Scan window elapsed with no erg. Drop the adapter and let the caller build a fresh one.
+        return Ok(());
+    };
+
+    println!("Erg detected: connecting...");
+    match row_distance(&pm).await {
+        Ok(Some(meters)) => log_row(client, meters).await,
+        Ok(None) => {}
+        Err(e) => eprintln!("Session error: {e}."),
+    }
+
+    pm.disconnect().await.ok();
+    println!("Disconnected: cooling down so the erg can sleep.\n");
+
+    tokio::time::sleep(COOLDOWN).await;
+    Ok(())
 }
 
 /// The first available Bluetooth adapter.
@@ -72,9 +99,11 @@ async fn first_adapter(manager: &Manager) -> anyhow::Result<Adapter> {
         .ok_or_else(|| anyhow!("No Bluetooth adapter found."))
 }
 
-/// Poll until a PM5 is advertising (which it does once you start rowing).
-async fn find_pm5(adapter: &Adapter) -> anyhow::Result<Peripheral> {
-    loop {
+/// Poll until a PM5 is advertising (which it does once you start rowing), or `None` if none appears
+/// within `SCAN_WINDOW` so the caller can recycle the adapter.
+async fn find_pm5(adapter: &Adapter) -> anyhow::Result<Option<Peripheral>> {
+    let deadline = Instant::now() + SCAN_WINDOW;
+    while Instant::now() < deadline {
         for p in adapter.peripherals().await? {
             let is_pm5 = p
                 .properties()
@@ -83,11 +112,12 @@ async fn find_pm5(adapter: &Adapter) -> anyhow::Result<Peripheral> {
                 .is_some_and(|n| n.starts_with("PM5"));
 
             if is_pm5 {
-                return Ok(p);
+                return Ok(Some(p));
             }
         }
         tokio::time::sleep(Duration::from_millis(500)).await;
     }
+    Ok(None)
 }
 
 /// Connect and follow cumulative distance. Returns the meters rowed once the erg goes quiet for
