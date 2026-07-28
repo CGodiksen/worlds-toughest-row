@@ -1,9 +1,14 @@
 import {useEffect, useRef, useState} from "react";
-import {Map as MapLibreMap, Marker, NavigationControl, LngLatBounds} from "maplibre-gl";
+import {Map as MapLibreMap, Marker, NavigationControl, LngLatBounds, setWorkerUrl} from "maplibre-gl";
 import type {StyleSpecification, GeoJSONSource} from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+import maplibreWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 import type {Progress} from "../bindings/Progress";
 import type {LatLng} from "../bindings/LatLng";
+
+// Point MapLibre at a worker Vite bundles and emits. Without this the production build fetches a worker file next to
+// the app bundle that was never emitted, so GeoJSON line and fill layers silently fail to render.
+setWorkerUrl(maplibreWorkerUrl);
 
 const MAP_STYLE: StyleSpecification = {
     version: 8,
