@@ -5,6 +5,7 @@ import { HistoryPanel } from "./components/HistoryPanel";
 import { useRowingData } from "./hooks/useRowingData";
 import {Celebration} from "./components/Celebration";
 import { FinishBanner } from "./components/FinishBanner";
+import {RecordsCard} from "./components/RecordsCard";
 
 export function App() {
     const { progress, entries, busy, advanceBy, reset } = useRowingData();
@@ -15,6 +16,7 @@ export function App() {
             {progress && (
                 <>
                     <StatsCard progress={progress} />
+                    <RecordsCard entries={entries} />
                     <AdvanceBar onAdvance={advanceBy} busy={busy} />
                     <HistoryPanel entries={entries} />
                     <Celebration done={progress.percent_complete >= 100} />
