@@ -18,7 +18,7 @@ use reqwest::Client;
 use uuid::Uuid;
 
 /// The tracker's "log a row" endpoint, the same one the web form posts to.
-const API_URL: &str = "http://127.0.0.1:8080/api/entries";
+const API_URL: &str = "http://127.0.0.1:4800/api/entries";
 
 /// No progress for this long means the row is finished.
 const IDLE: Duration = Duration::from_secs(30);

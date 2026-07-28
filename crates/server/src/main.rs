@@ -1,14 +1,14 @@
-//! Binary entry point that wires up storage and the route, starts the axum server on
-//! `127.0.0.1:8080`, and opens the app in the browser.
+//! Binary entry point that wires up storage and the route and starts the axum server on
+//! `127.0.0.1:4800`.
 
 mod router;
 
 use std::sync::Arc;
 
-use tokio::sync::broadcast;
 use api_types::Snapshot;
 use route::Route;
 use storage_sqlite::SqliteStorage;
+use tokio::sync::broadcast;
 
 /// Shared application state passed to every request handler.
 #[derive(Clone)]
@@ -21,8 +21,8 @@ pub struct AppState {
     pub sender: broadcast::Sender<Snapshot>,
 }
 
-/// Start the server. Open the database, build the router, bind the listener, open a browser,
-/// and serve until shut down.
+/// Start the server. Open the database, build the router, bind the listener, and serve until shut
+/// down.
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let (sender, _) = broadcast::channel(16);
@@ -33,11 +33,10 @@ async fn main() -> anyhow::Result<()> {
     };
 
     let app = router::router(state);
-    let addr = std::net::SocketAddr::from(([127, 0, 0, 1], 8080));
+    let addr = std::net::SocketAddr::from(([127, 0, 0, 1], 4800));
     let listener = tokio::net::TcpListener::bind(addr).await?;
 
     println!("listening on http://{addr}");
-    let _ = webbrowser::open(&format!("http://{addr}"));
     axum::serve(listener, app).await?;
 
     Ok(())

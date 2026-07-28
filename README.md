@@ -8,8 +8,8 @@ map, with running stats, a history log, and a finish-line celebration. The proje
 Rows can be logged by hand or captured automatically from a Concept2 erg with a small background agent that connects to 
 your rowing machine over Bluetooth and posts each session for you. Either way the map updates live, with no refresh.
 
-The tracker ships as a **single Rust binary** that serves the JSON API and embeds the built React UI. Run it, and it
-opens in your browser.
+The tracker ships as a **single Rust binary** that serves the JSON API and embeds the built React UI. Run it, 
+then open it in your browser.
 
 ## Technology stack
 
@@ -39,10 +39,10 @@ web/               React + Vite frontend
 Two terminals:
 
 ```sh
-# 1) API server on :8080
+# 1) API server on :4800
 cargo run -p server
 
-# 2) Vite dev server on :5173 (proxies /api to :8080)
+# 2) Vite dev server on :5173 (proxies /api to :4800)
 cd web && npm install && npm run dev
 ```
 
@@ -50,12 +50,14 @@ Then browse **http://localhost:5173**.
 
 ### Production (single binary)
 
-Build the UI, then run the release server. It serves everything on `:8080` and opens your browser:
+Build the UI, then run the release server, which serves everything on `:4800`:
 
 ```sh
 cd web && npm run build
 cargo run --release -p server
 ```
+
+Then browse http://localhost:4800.
 
 ## Automatic erg capture
 
