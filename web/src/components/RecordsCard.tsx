@@ -1,6 +1,4 @@
-import { useMemo } from "react";
-import type { Entry } from "../bindings/Entry";
-import { computeStats } from "../stats";
+import type { Stats } from "../stats";
 import { overlay } from "../styles/overlay";
 
 const m = (n: number) => n.toLocaleString("en-GB");
@@ -30,14 +28,11 @@ function PairRow({ label, current, record, unit }: {
     );
 }
 
-export function RecordsCard({ entries }: { entries: Entry[] }) {
-    const s = useMemo(() => computeStats(entries), [entries]);
-
+export function RecordsCard({ stats: s }: { stats: Stats }) {
     return (
         <div style={overlay({ top: 16, right: 16, width: 240, padding: 16 })}>
             <h2 style={{ margin: 0, fontSize: ".95rem" }}>Records</h2>
             <p style={{ margin: "2px 0 6px", fontSize: ".7rem", opacity: 0.5 }}>current / best</p>
-            <PairRow label="Streak" current={String(s.currentStreak)} record={String(s.longestStreak)} unit="days" />
             <PairRow label="Session" current={m(s.lastSession)} record={m(s.bestSession)} unit="m" />
             <PairRow label="Day" current={m(s.today)} record={m(s.bestDay)} unit="m" />
             <PairRow label="Week" current={m(s.thisWeek)} record={m(s.bestWeek)} unit="m" />
