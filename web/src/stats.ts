@@ -31,7 +31,6 @@ export interface Stats {
     thisMonth: number;
     bestSession: number;
     lastSession: number;
-    longestStreak: number;
     currentStreak: number;
 }
 
@@ -54,7 +53,7 @@ export function computeStats(entries: Entry[]): Stats {
         if (e.meters > bestSession) bestSession = e.meters;
     }
 
-    // Active local days, ascending, for streak walking.
+    // Active local days, ascending, for the streak walk.
     const days = [...byDay.keys()]
         .map((key) => {
             const [y, m, dd] = key.split("-").map(Number);
@@ -62,17 +61,10 @@ export function computeStats(entries: Entry[]): Stats {
         })
         .sort((a, b) => a - b);
 
-    let longestStreak = 0;
-    let run = 0;
-    for (let i = 0; i < days.length; i++) {
-        // Round the diff so daylight-saving hour shifts do not break a run.
-        run = i > 0 && Math.round((days[i] - days[i - 1]) / DAY) === 1 ? run + 1 : 1;
-        if (run > longestStreak) longestStreak = run;
-    }
-
     let currentStreak = 0;
     if (days.length) {
-        // Only counts if the last active day was today or yesterday.
+        // Only counts if the last active day was today or yesterday. Rounding the diff
+        // keeps daylight-saving hour shifts from breaking a run.
         const gap = Math.round((startOfDay(now.getTime()) - days[days.length - 1]) / DAY);
         if (gap <= 1) {
             currentStreak = 1;
@@ -95,7 +87,6 @@ export function computeStats(entries: Entry[]): Stats {
         thisMonth: byMonth.get(thisMonthKey) ?? 0,
         bestSession,
         lastSession,
-        longestStreak,
         currentStreak,
     };
 }
