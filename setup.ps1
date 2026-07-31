@@ -1,12 +1,12 @@
 # Register background tasks for the WTR server + erg agent. Run once in an ADMIN PowerShell.
 # Re-running just replaces them (-Force). Build the binaries yourself first, then restart to start.
 
-$RepoRoot  = $PSScriptRoot
-$ServerExe = "$RepoRoot\target\release\server.exe"
-$AgentExe  = "$RepoRoot\target\release\erg-agent.exe"
+$RepoRoot = $PSScriptRoot
+$ServerExe = "$RepoRoot\target\release\wtr-server.exe"
+$AgentExe = "$RepoRoot\target\release\wtr-erg.exe"
 
 $principal = New-ScheduledTaskPrincipal -UserId $env:USERNAME -LogonType Interactive
-$settings  = New-ScheduledTaskSettingsSet -MultipleInstances IgnoreNew -ExecutionTimeLimit ([TimeSpan]::Zero)
+$settings = New-ScheduledTaskSettingsSet -MultipleInstances IgnoreNew -ExecutionTimeLimit ([TimeSpan]::Zero)
 
 # Server: start at logon.
 Register-ScheduledTask -TaskName 'WTR Server' -Force -Principal $principal -Settings $settings `
